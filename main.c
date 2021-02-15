@@ -15,34 +15,36 @@ void error(char *err)
 
 int main(int argc, char *argv[])
 {
-    int sock, othersock=0, pnum;
-    struct sockaddr_in serveradd, clientadd;
+    int sock,othersock;
+    struct sockaddr_in serveradd,clientadd;
     socklen_t client;
-    if (argc < 2)
+    if(argc<2)
     {
-        error("missing pnum\n");
+        error("somthing is missing");
     }
-    if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0)
+    memset((char *)&serveradd,0,sizeof(serveradd));
+    memset((char *)&clientadd,0,sizeof(clientadd));
+    if((sock=socket(AF_INET,SOCK_STREAM,0))<0)
     {
-        error("couldnt open socket\n");
+        error("couldnt create socket.\n");
     }
-    memset(&serveradd, 0, sizeof(serveradd));
-    serveradd.sin_family = AF_INET;
-    serveradd.sin_addr.s_addr = INADDR_ANY;
-    serveradd.sin_port = htons((uint16_t)atoi(argv[1]));
-
-    if (bind(sock, (struct sockaddr *)&serveradd, sizeof(serveradd)) < 0)
+    serveradd.sin_family=AF_INET;
+    serveradd.sin_addr.s_addr=INADDR_ANY;
+    serveradd.sin_port=htons(atoi(argv[1]));
+    if((bind(sock,(struct sockaddr *)&serveradd,sizeof(serveradd)))<0)
     {
-        error("couldnt bind.\n");
+        error("binding failed.\n");
     }
     listen(sock,5);
-    printf("waiting for a client to connect...\n");
     client=sizeof(clientadd);
-    if ((othersock=accept(sock,(struct sockaddr *)&clientadd,&client)) < 0)
+    printf("waiting for a client to connect.\n");
+    if((othersock=accept(sock,(struct sockaddr *)&clientadd,&client))<0)
     {
-        error("client couldnt connect to you.\n");
+        error("connection failed.\n");
     }
-    printf("client sucessfly connected. IP:%s\n", inet_ntoa(clientadd.sin_addr));
-    char *buffer = {"hello"};
-    send(othersock, buffer, sizeof(buffer), 0);
+    printf("connection sucessful.IP:%s\n",(char *)inet_ntoa(clientadd.sin_addr));
+    char buffer[255];
+    recv(othersock,buffer,sizeof(buffer),0);
+    printf("%s\n",buffer);
+
 }
